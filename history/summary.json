@@ -70,25 +70,5 @@
     "timeMonth": 260,
     "timeYear": 260,
     "dailyMinutesDown": {}
-  },
-  {
-    "name": "JingleEleito",
-    "url": "https://jingleeleito.com.br",
-    "icon": "https://icons.duckduckgo.com/ip3/jingleeleito.com.br.ico",
-    "slug": "jingle-eleito",
-    "status": "down",
-    "uptime": "85.03%",
-    "uptimeDay": "85.03%",
-    "uptimeWeek": "85.03%",
-    "uptimeMonth": "85.03%",
-    "uptimeYear": "85.03%",
-    "time": 0,
-    "timeDay": 0,
-    "timeWeek": 0,
-    "timeMonth": 0,
-    "timeYear": 0,
-    "dailyMinutesDown": {
-      "2026-06-03": 0
-    }
   }
 ]
