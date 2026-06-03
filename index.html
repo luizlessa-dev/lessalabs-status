@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lessa Labs — Status</title>
+  <meta name="description" content="Status em tempo real dos produtos Lessa Labs."/>
+  <link rel="icon" type="image/svg+xml" href="https://lessalabs.com/favicon.svg"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:    #0D1B2A;
+      --rust:    #C1440E;
+      --cream:   #F5F0E8;
+      --green:   #2D6A4F;
+      --red:     #C0392B;
+      --yellow:  #D4A017;
+      --graphite:#3D3D3D;
+      --steel:   #4A6FA5;
+      --muted:   rgba(13,27,42,.45);
+    }
+
+    body {
+      font-family: 'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+      background: var(--cream);
+      color: var(--navy);
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 40px;
+      border-bottom: 1px solid rgba(13,27,42,.08);
+      background: var(--cream);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo span { font-size: 14px; font-weight: 700; letter-spacing: .06em; color: var(--navy); }
+    .nav-logo span em { font-style: normal; color: var(--rust); font-weight: 300; letter-spacing: .12em; }
+    .nav-link { font-size: 13px; color: var(--muted); text-decoration: none; }
+    .nav-link:hover { color: var(--navy); }
+
+    /* HERO */
+    .hero {
+      padding: 60px 40px 40px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    .hero-label {
+      font-size: 11px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--rust);
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .hero h1 { font-size: 36px; font-weight: 700; letter-spacing: -.5px; margin-bottom: 10px; }
+    .hero p  { font-size: 16px; color: var(--graphite); }
+
+    /* BANNER GLOBAL */
+    #global-banner {
+      margin: 0 40px 40px;
+      max-width: 780px;
+      margin-left: auto;
+      margin-right: auto;
+      border-radius: 14px;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .banner-up     { background: #E8F5ED; color: var(--green); }
+    .banner-down   { background: #FDECEA; color: var(--red); }
+    .banner-dot    { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .dot-up        { background: var(--green); box-shadow: 0 0 0 4px rgba(45,106,79,.2); }
+    .dot-down      { background: var(--red);   box-shadow: 0 0 0 4px rgba(192,57,43,.2); }
+
+    /* CARDS */
+    .services {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 40px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 22px 28px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      border: 1px solid rgba(13,27,42,.07);
+      transition: box-shadow .15s;
+    }
+    .card:hover { box-shadow: 0 4px 20px rgba(13,27,42,.07); }
+    .card-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: var(--cream);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .card-icon img { width: 24px; height: 24px; }
+    .card-body { flex: 1; min-width: 0; }
+    .card-name { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+    .card-url  { font-size: 12px; color: var(--muted); }
+    .card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 600; letter-spacing: .04em;
+      padding: 4px 10px; border-radius: 20px;
+    }
+    .badge-up   { background: #E8F5ED; color: var(--green); }
+    .badge-down { background: #FDECEA; color: var(--red); }
+    .badge-dot  { width: 6px; height: 6px; border-radius: 50%; }
+    .badge-up   .badge-dot { background: var(--green); }
+    .badge-down .badge-dot { background: var(--red); }
+    .card-uptime { font-size: 12px; color: var(--muted); }
+
+    /* BARS — 30 dias */
+    .bars { display: flex; gap: 2px; align-items: flex-end; height: 20px; }
+    .bar { width: 6px; border-radius: 2px; }
+    .bar-up   { background: var(--green); opacity: .7; }
+    .bar-down { background: var(--red); }
+    .bar-empty{ background: rgba(13,27,42,.08); }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid rgba(13,27,42,.08);
+      padding: 24px 40px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    footer a { color: var(--muted); text-decoration: underline; }
+
+    #last-updated { color: var(--muted); font-size: 13px; }
+
+    /* Skeleton loading */
+    .skeleton { background: rgba(13,27,42,.06); border-radius: 8px; animation: pulse 1.5s ease infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+    @media (max-width: 600px) {
+      nav, .hero, .services { padding-left: 20px; padding-right: 20px; }
+      .hero h1 { font-size: 26px; }
+      .card { padding: 16px 18px; gap: 14px; }
+      .bars { display: none; }
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="https://lessalabs.com">
+    <svg width="28" height="28" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="200" height="200" rx="40" fill="#0D1B2A"/>
+      <rect x="34" y="38" width="24" height="112" rx="5" fill="#F5F0E8"/>
+      <rect x="34" y="126" width="76" height="24" rx="5" fill="#F5F0E8"/>
+      <path d="M120 44 L160 100 L120 156" stroke="#C1440E" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    <span>LESSA <em>LABS</em></span>
+  </a>
+  <span id="last-updated">Atualizando…</span>
+</nav>
+
+<div class="hero">
+  <p class="hero-label">Status · Tempo real</p>
+  <h1 id="hero-title">Carregando…</h1>
+  <p id="hero-sub"></p>
+</div>
+
+<div id="global-banner" class="banner-up" style="display:none">
+  <span class="banner-dot dot-up" id="banner-dot"></span>
+  <span id="banner-text"></span>
+</div>
+
+<div class="services" id="services-list">
+  <!-- Skeletons -->
+  <div class="card"><div class="skeleton" style="width:36px;height:36px;border-radius:8px"></div><div class="card-body"><div class="skeleton" style="width:160px;height:14px;margin-bottom:6px"></div><div class="skeleton" style="width:100px;height:11px"></div></div></div>
+  <div class="card"><div class="skeleton" style="width:36px;height:36px;border-radius:8px"></div><div class="card-body"><div class="skeleton" style="width:140px;height:14px;margin-bottom:6px"></div><div class="skeleton" style="width:120px;height:11px"></div></div></div>
+  <div class="card"><div class="skeleton" style="width:36px;height:36px;border-radius:8px"></div><div class="card-body"><div class="skeleton" style="width:180px;height:14px;margin-bottom:6px"></div><div class="skeleton" style="width:90px;height:11px"></div></div></div>
+</div>
+
+<footer>
+  Monitorado por <a href="https://upptime.js.org" target="_blank">Upptime</a> ·
+  <a href="https://github.com/luizlessa-dev/lessalabs-status" target="_blank">Ver histórico</a> ·
+  <a href="https://lessalabs.com">Lessa Labs</a>
+</footer>
+
+<script>
+const SUMMARY_URL = 'https://raw.githubusercontent.com/luizlessa-dev/lessalabs-status/master/history/summary.json';
+
+function timeSince(isoString) {
+  if (!isoString) return '';
+  const d = new Date(isoString);
+  const mins = Math.round((Date.now() - d) / 60000);
+  if (mins < 2)  return 'agora mesmo';
+  if (mins < 60) return `há ${mins} minutos`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24)  return `há ${hrs}h`;
+  return `há ${Math.round(hrs/24)} dias`;
+}
+
+function buildBars(dailyDown) {
+  // últimos 30 dias — sem dados ainda gera barras "up"
+  const bars = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0,10);
+    const mins = dailyDown?.[key] || 0;
+    const cls = mins > 60 ? 'bar-down' : mins > 0 ? 'bar-empty' : 'bar-up';
+    const h = mins > 60 ? 20 : mins > 0 ? 12 : 16;
+    bars.push(`<div class="bar ${cls}" style="height:${h}px" title="${key}"></div>`);
+  }
+  return `<div class="bars">${bars.join('')}</div>`;
+}
+
+async function load() {
+  try {
+    const res  = await fetch(SUMMARY_URL + '?t=' + Date.now());
+    const data = await res.json();
+
+    const allUp = data.every(s => s.status === 'up');
+    const downCount = data.filter(s => s.status !== 'up').length;
+
+    // Hero
+    document.getElementById('hero-title').textContent =
+      allUp ? 'Todos os sistemas operacionais' : `${downCount} serviço${downCount>1?'s':''} com problema`;
+    document.getElementById('hero-sub').textContent =
+      allUp ? 'Nenhuma interrupção detectada no momento.' : 'Estamos verificando. Atualizações em breve.';
+
+    // Banner
+    const banner = document.getElementById('global-banner');
+    const dot    = document.getElementById('banner-dot');
+    const txt    = document.getElementById('banner-text');
+    banner.style.display = 'flex';
+    if (allUp) {
+      banner.className = 'banner-up';
+      dot.className = 'banner-dot dot-up';
+      txt.textContent = 'Todos os sistemas operacionais';
+    } else {
+      banner.className = 'banner-down';
+      dot.className = 'banner-dot dot-down';
+      txt.textContent = `${downCount} serviço${downCount>1?'s':''} fora do ar`;
+    }
+
+    // Cards
+    const list = document.getElementById('services-list');
+    list.innerHTML = data.map(s => {
+      const up = s.status === 'up';
+      return `
+        <div class="card">
+          <div class="card-icon">
+            <img src="${s.icon}" alt="${s.name}" onerror="this.style.display='none'"/>
+          </div>
+          <div class="card-body">
+            <div class="card-name">${s.name}</div>
+            <div class="card-url">${s.url.replace(/^https?:\/\//, '')}</div>
+          </div>
+          <div class="card-right">
+            <span class="badge ${up ? 'badge-up' : 'badge-down'}">
+              <span class="badge-dot"></span>
+              ${up ? 'Operacional' : 'Fora do ar'}
+            </span>
+            <span class="card-uptime">${s.uptimeDay} hoje · ${s.time}ms</span>
+            ${buildBars(s.dailyMinutesDown)}
+          </div>
+        </div>`;
+    }).join('');
+
+    // Last updated
+    const lastCommit = data[0]?.slug ? '' : '';
+    document.getElementById('last-updated').textContent =
+      'Atualizado a cada hora via GitHub Actions';
+
+  } catch(e) {
+    document.getElementById('hero-title').textContent = 'Não foi possível carregar o status';
+    document.getElementById('hero-sub').textContent = 'Tente novamente em instantes.';
+  }
+}
+
+load();
+</script>
+</body>
+</html>
