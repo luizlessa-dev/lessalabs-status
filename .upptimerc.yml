@@ -1,0 +1,29 @@
+owner: luizlessa-dev
+repo: lessalabs-status
+
+sites:
+  - name: Lessa Labs
+    url: https://lessalabs.com
+  - name: BR Insider
+    url: https://thebrinsider.com
+  - name: Observatório Judiciário
+    url: https://judiciario.thebrinsider.com
+  - name: Gastronomizaê
+    url: https://gastronomizae.com
+  - name: JingleEleito
+    url: https://jingleeleito.com.br
+
+status-website:
+  cname: status.lessalabs.com
+  name: Lessa Labs — Status
+  theme: light
+  description: Monitoramento em tempo real dos produtos Lessa Labs.
+  navbar:
+    - title: lessalabs.com
+      href: https://lessalabs.com
+
+assignees:
+  - luizlessa-dev
+
+i18n:
+  footer: Monitorado por [Upptime](https://upptime.js.org) · [Lessa Labs](https://lessalabs.com)

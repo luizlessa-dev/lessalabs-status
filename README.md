@@ -1,0 +1,13 @@
+# Lessa Labs — Status
+
+Monitoramento em tempo real dos produtos [Lessa Labs](https://lessalabs.com).
+
+| Produto | Status | Uptime (7d) | Uptime (30d) |
+| --- | --- | --- | --- |
+| Lessa Labs | ![Uptime](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/luizlessa-dev/lessalabs-status/master/api/lessa-labs/uptime.json) | ![Uptime 7d](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/luizlessa-dev/lessalabs-status/master/api/lessa-labs/uptime-week.json) | ![Uptime 30d](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/luizlessa-dev/lessalabs-status/master/api/lessa-labs/uptime-month.json) |
+| BR Insider | ![Uptime](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/luizlessa-dev/lessalabs-status/master/api/br-insider/uptime.json) | ![Uptime 7d](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/luizlessa-dev/lessalabs-status/master/api/br-insider/uptime-week.json) | ![Uptime 30d](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/luizlessa-dev/lessalabs-status/master/api/br-insider/uptime-month.json) |
+| Observatório Judiciário | ![Uptime](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/luizlessa-dev/lessalabs-status/master/api/observatorio-judiciario/uptime.json) | ![Uptime 7d](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/luizlessa-dev/lessalabs-status/master/api/observatorio-judiciario/uptime-week.json) | ![Uptime 30d](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/luizlessa-dev/lessalabs-status/master/api/observatorio-judiciario/uptime-month.json) |
+| Gastronomizaê | ![Uptime](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/luizlessa-dev/lessalabs-status/master/api/gastronomizae/uptime.json) | ![Uptime 7d](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/luizlessa-dev/lessalabs-status/master/api/gastronomizae/uptime-week.json) | ![Uptime 30d](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/luizlessa-dev/lessalabs-status/master/api/gastronomizae/uptime-month.json) |
+| JingleEleito | ![Uptime](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/luizlessa-dev/lessalabs-status/master/api/jingleeleito/uptime.json) | ![Uptime 7d](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/luizlessa-dev/lessalabs-status/master/api/jingleeleito/uptime-week.json) | ![Uptime 30d](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/luizlessa-dev/lessalabs-status/master/api/jingleeleito/uptime-month.json) |
+
+Monitorado por [Upptime](https://upptime.js.org).

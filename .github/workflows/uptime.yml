@@ -1,0 +1,18 @@
+name: Uptime CI
+on:
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: "0 * * * *"   # a cada hora (GitHub Free limita cron a no mínimo 5min, mas 1h é suficiente)
+  workflow_dispatch:       # permite rodar manualmente
+jobs:
+  uptime:
+    name: Check status
+    runs-on: ubuntu-latest
+    steps:
+      - name: Upptime
+        uses: upptime/uptime-monitor@master
+        with:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          CONFIG_FILE: .upptimerc.yml

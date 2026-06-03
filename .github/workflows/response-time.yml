@@ -1,0 +1,20 @@
+name: Response Time Graph
+on:
+  workflow_run:
+    workflows: ["Uptime CI"]
+    types:
+      - completed
+  schedule:
+    - cron: "0 0 * * *"   # diário
+  workflow_dispatch:
+jobs:
+  response-time:
+    name: Generate graphs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Upptime
+        uses: upptime/uptime-monitor@master
+        with:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          TYPE: response-time
+          CONFIG_FILE: .upptimerc.yml

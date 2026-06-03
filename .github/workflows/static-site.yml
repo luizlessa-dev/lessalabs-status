@@ -1,0 +1,21 @@
+name: Static Site CI
+on:
+  push:
+    branches:
+      - master
+  workflow_run:
+    workflows: ["Uptime CI"]
+    types:
+      - completed
+  workflow_dispatch:
+jobs:
+  static-site:
+    name: Generate status page
+    runs-on: ubuntu-latest
+    steps:
+      - name: Upptime
+        uses: upptime/uptime-monitor@master
+        with:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          TYPE: static-site
+          CONFIG_FILE: .upptimerc.yml
