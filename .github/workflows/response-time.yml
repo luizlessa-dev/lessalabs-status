@@ -12,9 +12,13 @@ jobs:
     name: Generate graphs
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
       - name: Upptime
         uses: upptime/uptime-monitor@master
         with:
           command: response-time
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
