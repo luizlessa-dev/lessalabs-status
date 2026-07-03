@@ -94,17 +94,15 @@ export default function MapView({ citySlug }: Props) {
       setSelected(feature);
     });
 
-    map.on("click", "clusters", (e) => {
+    map.on("click", "clusters", async (e) => {
       const features = map.queryRenderedFeatures(e.point, { layers: ["clusters"] });
       const clusterId = features[0].properties?.cluster_id;
-      (map.getSource("transactions") as maplibregl.GeoJSONSource)
-        .getClusterExpansionZoom(clusterId, (err, zoom) => {
-          if (err) return;
-          map.easeTo({
-            center: (features[0].geometry as GeoJSON.Point).coordinates as [number, number],
-            zoom: zoom ?? map.getZoom() + 2,
-          });
-        });
+      const source = map.getSource("transactions") as maplibregl.GeoJSONSource;
+      const zoom = await source.getClusterExpansionZoom(clusterId);
+      map.easeTo({
+        center: (features[0].geometry as GeoJSON.Point).coordinates as [number, number],
+        zoom: zoom ?? map.getZoom() + 2,
+      });
     });
 
     map.getCanvas().style.cursor = "default";
