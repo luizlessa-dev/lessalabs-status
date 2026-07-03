@@ -1,9 +1,6 @@
 # Supabase local dev config
 # Documentação: https://supabase.com/docs/guides/cli/config
 
-[project]
-id = "valorreal"
-
 [api]
 enabled = true
 port = 54321
