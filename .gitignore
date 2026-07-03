@@ -1,0 +1,11 @@
+.next/
+node_modules/
+.env.local
+.env.*.local
+*.log
+.DS_Store
+Thumbs.db
+pipeline/.venv/
+pipeline/__pycache__/
+pipeline/**/__pycache__/
+*.pyc
