@@ -33,9 +33,9 @@ def _parse_date(s) -> date_ | None:
         return None
     s = str(s).strip()
     import datetime
-    for fmt in ("%Y/%m/%d %H:%M:%S", "%Y/%m/%d", "%d/%m/%Y", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
+    for fmt in ("%Y/%m/%d %H:%M:%S", "%Y/%m/%d", "%d/%m/%Y %H:%M:%S", "%d/%m/%Y", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
         try:
-            return datetime.datetime.strptime(s[:len(fmt)], fmt).date()
+            return datetime.datetime.strptime(s, fmt).date()
         except Exception:
             pass
     return None
