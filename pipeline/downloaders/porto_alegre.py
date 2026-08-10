@@ -106,7 +106,7 @@ def download(year: int | None = None) -> pd.DataFrame:
         url  = r.get("url", "")
         if target_year and target_year not in name:
             continue
-        if not url.endswith(".csv"):
+        if r.get("format", "").upper() != "CSV":
             continue
 
         print(f"  [POA] {name}...")
