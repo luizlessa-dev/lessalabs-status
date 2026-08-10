@@ -65,11 +65,12 @@ def download(year: int | None = None) -> pd.DataFrame:
     resources = _get_resources()
 
     # Recursos mensais: "{year} - {Mês} - ITBI Relatórios"
+    # Somente CSVs mensais: "{year} - {Mês} - ITBI Relatórios"
+    # Exclui o bulk histórico "01/2008 a 05/2024" que é enorme demais para carregar todo
     monthly = [
         r for r in resources
         if r.get("format", "").upper() == "CSV"
-        and year_str in r.get("name", "")
-        and "ITBI" in r.get("name", "")
+        and r.get("name", "").strip().startswith(year_str + " - ")
     ]
 
     if not monthly:
