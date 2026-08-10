@@ -12,6 +12,14 @@ import pandas as pd
 CKAN_BASE = "https://dadosabertos.poa.br/api/3/action"
 DATASET_ID = "itbi"
 
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/124.0.0.0 Safari/537.36"
+    )
+}
+
 
 def _parse_num(s) -> float | None:
     try:
@@ -21,35 +29,30 @@ def _parse_num(s) -> float | None:
 
 
 def _parse_date(s) -> date_ | None:
-    if not s:
+    if not s or str(s).strip().lower() in ("nan", "none", ""):
         return None
     s = str(s).strip()
-    for fmt in ("%d/%m/%Y", "%Y-%m-%d", "%Y"):
+    import datetime
+    for fmt in ("%Y/%m/%d %H:%M:%S", "%Y/%m/%d", "%d/%m/%Y", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
         try:
-            import datetime
-            return datetime.datetime.strptime(s[:len(fmt.replace("%Y", "0000").replace("%m", "00").replace("%d", "00"))], fmt).date()
+            return datetime.datetime.strptime(s[:len(fmt)], fmt).date()
         except Exception:
             pass
-    try:
-        ts = pd.to_datetime(s, dayfirst=True, errors="coerce")
-        if pd.notna(ts):
-            return ts.date()
-    except Exception:
-        pass
     return None
 
 
 def _normalize_df(df: pd.DataFrame) -> pd.DataFrame:
     """Normaliza um DataFrame individual usando Python puro (evita segfault numpy 2.x)."""
-    cols = [c.strip().lower() for c in df.columns]
+    # Remove aspas simples literais que o portal de POA inclui nos nomes de colunas
+    cols = [c.strip().lower().strip("'") for c in df.columns]
     df.columns = cols
 
-    logr_col  = next((c for c in cols if c in ("logradouro", "endereco", "rua")), None)
-    num_col   = next((c for c in cols if c in ("numero", "num", "nro")), None)
+    logr_col   = next((c for c in cols if c in ("logradouro", "endereco", "rua")), None)
+    num_col    = next((c for c in cols if c in ("n_endereco", "numero", "num", "nro")), None)
     bairro_col = next((c for c in cols if "bairro" in c), None)
-    val_col   = next((c for c in cols if c in ("base_calculo", "valor", "valor_itbi", "vt")), None)
-    area_col  = next((c for c in cols if c in ("area", "area_imovel", "area_total", "area_construida")), None)
-    date_col  = next((c for c in cols if any(w in c for w in ("data", "competencia", "exercicio", "ano"))), None)
+    val_col    = next((c for c in cols if c in ("base_de_calculo", "base_calculo", "valor", "valor_itbi", "vt")), None)
+    area_col   = next((c for c in cols if c in ("area_constr_privativa", "area_constr_total", "area_total_terreno", "area", "area_imovel")), None)
+    date_col   = next((c for c in cols if any(w in c for w in ("data", "competencia", "exercicio", "ano"))), None)
 
     def _col(name):
         return df[name].tolist() if name and name in df.columns else [None] * len(df)
@@ -93,6 +96,7 @@ def download(year: int | None = None) -> pd.DataFrame:
     resp = requests.get(
         f"{CKAN_BASE}/package_show",
         params={"id": DATASET_ID},
+        headers=HEADERS,
         timeout=30,
     )
     resp.raise_for_status()
@@ -111,7 +115,7 @@ def download(year: int | None = None) -> pd.DataFrame:
 
         print(f"  [POA] {name}...")
         try:
-            csv_resp = requests.get(url, timeout=120)
+            csv_resp = requests.get(url, headers=HEADERS, timeout=120)
             csv_resp.raise_for_status()
             for enc in ("utf-8", "latin-1"):
                 try:
