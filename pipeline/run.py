@@ -7,7 +7,7 @@ Pipeline principal. Uso:
 import argparse
 import sys
 from datetime import date
-import psycopg2
+import psycopg
 from config import DATABASE_URL, CITIES
 from downloaders import DOWNLOADERS
 from geocoder import geocode_batch
@@ -25,7 +25,7 @@ def run(city_slug: str, year: int) -> None:
         return
     print(f"[{city_slug}] {len(df):,} records fetched.")
 
-    conn = psycopg2.connect(DATABASE_URL)
+    conn = psycopg.connect(DATABASE_URL)
 
     print(f"[{city_slug}] Geocoding {df['address'].nunique():,} unique addresses...")
     unique_addresses = df["address"].dropna().unique().tolist()

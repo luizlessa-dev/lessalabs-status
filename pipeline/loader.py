@@ -3,8 +3,7 @@ Carrega transações normalizadas no PostgreSQL + PostGIS.
 Usa upsert para evitar duplicatas (source + external_id).
 """
 import json
-import psycopg2
-import psycopg2.extras
+import psycopg
 import pandas as pd
 from tqdm import tqdm
 
@@ -12,11 +11,10 @@ from tqdm import tqdm
 def load_transactions(
     df: pd.DataFrame,
     city_id: int,
-    conn: psycopg2.extensions.connection,
+    conn: psycopg.Connection,
     coords: dict[str, tuple[float, float] | None],
     batch_size: int = 500,
 ) -> tuple[int, int]:
-    cur = conn.cursor()
     inserted = skipped = 0
 
     records = df.to_dict("records")
@@ -51,26 +49,22 @@ def load_transactions(
                 raw_json,
             ))
 
-        psycopg2.extras.execute_values(
-            cur,
-            """
-            INSERT INTO transactions
-              (city_id, address, neighborhood, zip_code, value, area_m2,
-               property_type, transaction_date, source, external_id, geom, raw_data)
-            VALUES %s
-            ON CONFLICT (source, external_id) DO NOTHING
-            """,
-            values,
-            template=(
-                "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,"
-                "ST_GeomFromEWKT(%s),"
-                "%s::jsonb"
-            ),
-        )
-        batch_ins = cur.rowcount if cur.rowcount >= 0 else 0
-        inserted += batch_ins
-        skipped  += len(batch) - batch_ins
+        with conn.cursor() as cur:
+            cur.executemany(
+                """
+                INSERT INTO transactions
+                  (city_id, address, neighborhood, zip_code, value, area_m2,
+                   property_type, transaction_date, source, external_id, geom, raw_data)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
+                        ST_GeomFromEWKT(%s),
+                        %s::jsonb)
+                ON CONFLICT (source, external_id) DO NOTHING
+                """,
+                values,
+            )
+            batch_ins = cur.rowcount if cur.rowcount >= 0 else 0
+            inserted += batch_ins
+            skipped  += len(batch) - batch_ins
         conn.commit()
 
-    cur.close()
     return inserted, skipped
