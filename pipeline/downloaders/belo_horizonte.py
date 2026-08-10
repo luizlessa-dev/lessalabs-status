@@ -12,6 +12,17 @@ CKAN_API = "https://ckan.pbh.gov.br/api/3/action/datastore_search"
 RESOURCE_ID = "8b73b834-f7c0-4abd-b8c8-185a9bfb30f1"
 
 
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/124.0.0.0 Safari/537.36"
+    ),
+    "Accept": "application/json",
+    "Referer": "https://ckan.pbh.gov.br/",
+}
+
+
 def download(year: int | None = None, limit: int = 100_000) -> pd.DataFrame:
     rows: list[dict] = []
     offset = 0
@@ -22,7 +33,7 @@ def download(year: int | None = None, limit: int = 100_000) -> pd.DataFrame:
         if filters:
             params["filters"] = filters
 
-        resp = requests.get(CKAN_API, params=params, timeout=60)
+        resp = requests.get(CKAN_API, params=params, headers=HEADERS, timeout=60)
         resp.raise_for_status()
         result = resp.json()["result"]
         batch = result.get("records", [])
