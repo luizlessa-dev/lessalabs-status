@@ -1,6 +1,6 @@
 """
 Fonte: Secretaria Municipal da Fazenda de São Paulo
-URL:   https://prefeitura.sp.gov.br/web/fazenda/w/acesso_a_informacao/31501
+API:   https://dados.prefeitura.sp.gov.br/api/3/action/package_show?id=<dataset_id>
 Formato: CSV, atualização mensal
 Campos:  ANODTB, MESDTB, NRLOGR, DSLOGR, NRCONTR, NMCOMPLM, NMBAIRRO,
          VLUTIL, VLOUTROS, VLTOTAL, NUGEO (geocódigo SQL)
@@ -10,13 +10,8 @@ from datetime import date
 import requests
 import pandas as pd
 
-
-BASE_URL = (
-    "https://dados.prefeitura.sp.gov.br/dataset/"
-    "3cdbd99f-b534-450a-8b39-04b22cc5bcc2/resource/"
-    "4c9a5b91-3c52-4e7e-9d1a-37a6a8c4b4fc/download/"
-    "transacoes_imobiliarias_{year}.csv"
-)
+CKAN_API = "https://dados.prefeitura.sp.gov.br/api/3/action/package_show"
+DATASET_ID = "3cdbd99f-b534-450a-8b39-04b22cc5bcc2"
 
 DTYPE_MAP = {
     "NRLOGR":  str,
@@ -28,9 +23,37 @@ DTYPE_MAP = {
 }
 
 
+def _find_csv_url(year: int) -> str:
+    """Descobre a URL do CSV via API CKAN para evitar dependência de resource_id fixo."""
+    resp = requests.get(CKAN_API, params={"id": DATASET_ID}, timeout=30)
+    resp.raise_for_status()
+    data = resp.json()
+
+    if not data.get("success"):
+        raise RuntimeError(f"CKAN API retornou erro: {data.get('error')}")
+
+    resources = data["result"]["resources"]
+    year_str = str(year)
+
+    # Prioriza recursos cujo nome/URL contenha o ano
+    for r in resources:
+        url = r.get("url", "")
+        name = r.get("name", "")
+        if year_str in url or year_str in name:
+            return url
+
+    # Fallback: retorna o recurso CSV mais recente disponível
+    csv_resources = [r for r in resources if r.get("format", "").upper() == "CSV"]
+    if csv_resources:
+        return csv_resources[-1]["url"]
+
+    raise RuntimeError(f"Nenhum recurso CSV encontrado para o ano {year} no dataset SP.")
+
+
 def download(year: int | None = None) -> pd.DataFrame:
     year = year or date.today().year
-    url = BASE_URL.format(year=year)
+    url = _find_csv_url(year)
+    print(f"  [SP] Baixando de: {url}")
 
     resp = requests.get(url, timeout=120)
     resp.raise_for_status()
