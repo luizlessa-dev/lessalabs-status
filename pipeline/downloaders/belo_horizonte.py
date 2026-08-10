@@ -64,7 +64,6 @@ def download(year: int | None = None) -> pd.DataFrame:
 
     resources = _get_resources()
 
-    # Recursos mensais: "{year} - {Mês} - ITBI Relatórios"
     # Somente CSVs mensais: "{year} - {Mês} - ITBI Relatórios"
     # Exclui o bulk histórico "01/2008 a 05/2024" que é enorme demais para carregar todo
     monthly = [
@@ -77,26 +76,35 @@ def download(year: int | None = None) -> pd.DataFrame:
         print(f"  [BH] Nenhum recurso CSV encontrado para {year}.")
         return pd.DataFrame()
 
-    all_dfs: list[pd.DataFrame] = []
+    # Normaliza cada arquivo individualmente para evitar concat de DataFrames brutos
+    # com muitas colunas (workaround para segfault em Python 3.14 + numpy no macOS ARM)
+    normalized: list[pd.DataFrame] = []
+    offset = 0
     for r in sorted(monthly, key=lambda x: x["name"]):
         print(f"  [BH] {r['name']}...")
         try:
-            df = _read_csv(r["url"])
-            # guarda mês para data de transação
+            raw = _read_csv(r["url"])
             name_lower = r["name"].lower()
-            df["_mes"] = next((v for k, v in MONTH_PT.items() if k in name_lower), 1)
-            df["_ano"] = year
-            all_dfs.append(df)
+            mes = next((v for k, v in MONTH_PT.items() if k in name_lower), 1)
+            norm = _normalize(raw, year=year, mes=mes, index_offset=offset)
+            offset += len(raw)
+            normalized.append(norm)
+            del raw
         except Exception as exc:
             print(f"  [BH] Erro em '{r['name']}': {exc}")
 
-    if not all_dfs:
+    if not normalized:
         return pd.DataFrame()
 
-    return _normalize(pd.concat(all_dfs, ignore_index=True))
+    return pd.concat(normalized, ignore_index=True)
 
 
-def _normalize(df: pd.DataFrame) -> pd.DataFrame:
+def _normalize(
+    df: pd.DataFrame,
+    year: int = 0,
+    mes: int = 1,
+    index_offset: int = 0,
+) -> pd.DataFrame:
     out = pd.DataFrame()
 
     # Endereco já inclui bairro, CEP e cidade: perfeito para geocoding
@@ -132,17 +140,16 @@ def _normalize(df: pd.DataFrame) -> pd.DataFrame:
         ).dt.date
     else:
         out["transaction_date"] = pd.to_datetime(
-            dict(year=df["_ano"], month=df["_mes"], day=1), errors="coerce"
+            dict(year=year, month=mes, day=1), errors="coerce"
         ).dt.date
 
     out["source"] = "itbi_bh"
-    # external_id: usa _id do datastore se disponível, senão índice + mês/ano
     if "_id" in df.columns:
         out["external_id"] = df["_id"].astype(str)
     else:
         out["external_id"] = (
-            df["_ano"].astype(str) + "_" + df["_mes"].astype(str)
-            + "_" + df.index.astype(str)
+            str(year) + "_" + str(mes) + "_"
+            + (df.index + index_offset).astype(str)
         )
     out["raw_data"] = df.to_dict("records")
 
