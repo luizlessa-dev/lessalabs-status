@@ -6,7 +6,7 @@ Colunas: Endereco, Bairro, Area Construida Adquirida, Valor Declarado,
          Descricao Tipo Ocupacao Unidade, Data Quitacao Transacao, ...
 """
 import io
-from datetime import date, date as date_
+from datetime import date as date_
 import requests
 import pandas as pd
 
@@ -59,7 +59,7 @@ def _read_csv(url: str) -> pd.DataFrame:
 
 
 def download(year: int | None = None) -> pd.DataFrame:
-    year = year or date.today().year
+    year = year or date_.today().year
     year_str = str(year)
 
     resources = _get_resources()
@@ -99,56 +99,82 @@ def download(year: int | None = None) -> pd.DataFrame:
     return pd.concat(normalized, ignore_index=True)
 
 
+def _parse_num(s) -> float | None:
+    try:
+        return float(str(s).replace(",", "."))
+    except Exception:
+        return None
+
+
+def _parse_date(s, fallback: date_) -> date_:
+    try:
+        parts = str(s).strip().split("/")
+        if len(parts) == 3:
+            return date_(int(parts[2]), int(parts[1]), int(parts[0]))
+    except Exception:
+        pass
+    return fallback
+
+
+def _classify_type(t) -> str | None:
+    t = str(t).lower() if t else ""
+    if any(w in t for w in ["resid", "apart", "casa"]):
+        return "residential"
+    if any(w in t for w in ["comer", "loja", "sala"]):
+        return "commercial"
+    if "terr" in t:
+        return "land"
+    return None
+
+
 def _normalize(
     df: pd.DataFrame,
     year: int = 0,
     mes: int = 1,
     index_offset: int = 0,
 ) -> pd.DataFrame:
-    out = pd.DataFrame()
-
-    # Endereco já inclui bairro, CEP e cidade: perfeito para geocoding
-    out["address"] = df.get("Endereco", pd.Series(dtype=str)).str.title().fillna("")
-    out["neighborhood"] = df.get("Bairro", pd.Series(dtype=str)).str.title()
-
+    # Usa Python puro em vez de operações vetorizadas do numpy para evitar
+    # segfault no Python 3.14 + numpy 2.x no macOS ARM
     area_col = (
         "Area Construida Adquirida"
         if "Area Construida Adquirida" in df.columns
         else "Area Adquirida Unidades Somadas"
     )
-    out["area_m2"] = pd.to_numeric(
-        df.get(area_col, pd.Series(dtype=str)).astype(str).str.replace(",", "."),
-        errors="coerce",
-    )
+    has_date_col = "Data Quitacao Transacao" in df.columns
+    has_id_col = "_id" in df.columns
+    fallback = date_(year, mes, 1)
 
-    out["value"] = pd.to_numeric(
-        df.get("Valor Declarado", pd.Series(dtype=str)).astype(str).str.replace(",", "."),
-        errors="coerce",
-    )
+    def _col(name):
+        return df[name].tolist() if name in df.columns else [None] * len(df)
 
-    tipo = df.get("Descricao Tipo Ocupacao Unidade", pd.Series(dtype=str)).fillna("").str.lower()
-    out["property_type"] = tipo.map(
-        lambda t: "residential" if any(w in t for w in ["resid", "apart", "casa"])
-                  else "commercial" if any(w in t for w in ["comer", "loja", "sala"])
-                  else "land" if "terr" in t
-                  else None
-    )
+    enderecos = _col("Endereco")
+    bairros   = _col("Bairro")
+    areas     = _col(area_col)
+    values    = _col("Valor Declarado")
+    tipos     = _col("Descricao Tipo Ocupacao Unidade")
+    dates     = _col("Data Quitacao Transacao") if has_date_col else None
+    ids       = _col("_id") if has_id_col else None
 
-    if "Data Quitacao Transacao" in df.columns:
-        out["transaction_date"] = pd.to_datetime(
-            df["Data Quitacao Transacao"], dayfirst=True, errors="coerce"
-        ).dt.date
-    else:
-        out["transaction_date"] = date_(year, mes, 1)
+    rows = []
+    for i in range(len(df)):
+        val = _parse_num(values[i])
+        if val is None:
+            continue
+        txdate = _parse_date(dates[i], fallback) if has_date_col else fallback
+        if txdate is None:
+            continue
+        addr = str(enderecos[i]).strip().title() if enderecos[i] else ""
+        ext_id = str(ids[i]) if has_id_col else f"{year}_{mes}_{i + index_offset}"
+        rows.append({
+            "address": addr,
+            "neighborhood": str(bairros[i]).title() if bairros[i] else None,
+            "area_m2": _parse_num(areas[i]),
+            "value": val,
+            "property_type": _classify_type(tipos[i]),
+            "transaction_date": txdate,
+            "source": "itbi_bh",
+            "external_id": ext_id,
+            "raw_data": None,
+        })
 
-    out["source"] = "itbi_bh"
-    if "_id" in df.columns:
-        out["external_id"] = df["_id"].astype(str)
-    else:
-        out["external_id"] = (
-            str(year) + "_" + str(mes) + "_"
-            + (df.index + index_offset).astype(str)
-        )
-    out["raw_data"] = None  # df.to_dict causa segfault no Python 3.14 + numpy 2.x
-
-    return out.dropna(subset=["value", "transaction_date"])
+    return pd.DataFrame(rows)
