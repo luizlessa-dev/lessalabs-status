@@ -6,7 +6,7 @@ Colunas: Endereco, Bairro, Area Construida Adquirida, Valor Declarado,
          Descricao Tipo Ocupacao Unidade, Data Quitacao Transacao, ...
 """
 import io
-from datetime import date
+from datetime import date, date as date_
 import requests
 import pandas as pd
 
@@ -139,9 +139,7 @@ def _normalize(
             df["Data Quitacao Transacao"], dayfirst=True, errors="coerce"
         ).dt.date
     else:
-        out["transaction_date"] = pd.to_datetime(
-            dict(year=year, month=mes, day=1), errors="coerce"
-        ).dt.date
+        out["transaction_date"] = date_(year, mes, 1)
 
     out["source"] = "itbi_bh"
     if "_id" in df.columns:
@@ -151,6 +149,6 @@ def _normalize(
             str(year) + "_" + str(mes) + "_"
             + (df.index + index_offset).astype(str)
         )
-    out["raw_data"] = df.to_dict("records")
+    out["raw_data"] = None  # df.to_dict causa segfault no Python 3.14 + numpy 2.x
 
     return out.dropna(subset=["value", "transaction_date"])
