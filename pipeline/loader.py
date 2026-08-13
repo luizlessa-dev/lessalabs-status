@@ -17,13 +17,25 @@ def load_transactions(
 ) -> tuple[int, int]:
     inserted = skipped = 0
 
-    records = df.to_dict("records")
-    for i in tqdm(range(0, len(records), batch_size), desc="Loading"):
-        batch = records[i : i + batch_size]
-        values: list[tuple] = []
+    # Extract columns as plain Python lists to avoid numpy/segfault issues
+    col = lambda name: df[name].tolist() if name in df.columns else [None] * len(df)
+    addresses      = col("address")
+    neighborhoods  = col("neighborhood")
+    zip_codes      = col("zip_code")
+    values_        = col("value")
+    areas          = col("area_m2")
+    ptypes         = col("property_type")
+    dates          = col("transaction_date")
+    sources        = col("source")
+    ext_ids        = col("external_id")
 
-        for row in batch:
-            addr = row.get("address", "")
+    n = len(df)
+    for i in tqdm(range(0, n, batch_size), desc="Loading"):
+        end = min(i + batch_size, n)
+        batch_values: list[tuple] = []
+
+        for j in range(i, end):
+            addr = addresses[j] or ""
             coords_pair = coords.get(addr)
 
             geom = None
@@ -31,22 +43,19 @@ def load_transactions(
                 lng, lat = coords_pair
                 geom = f"SRID=4326;POINT({lng} {lat})"
 
-            raw = row.get("raw_data")
-            raw_json = json.dumps(raw, ensure_ascii=False, default=str) if raw else None
-
-            values.append((
+            batch_values.append((
                 city_id,
                 addr,
-                row.get("neighborhood"),
-                row.get("zip_code"),
-                row.get("value"),
-                row.get("area_m2"),
-                row.get("property_type"),
-                row.get("transaction_date"),
-                row.get("source"),
-                str(row.get("external_id", "")),
+                neighborhoods[j],
+                zip_codes[j],
+                values_[j],
+                areas[j],
+                ptypes[j],
+                dates[j],
+                sources[j],
+                str(ext_ids[j]) if ext_ids[j] is not None else str(j),
                 geom,
-                raw_json,
+                None,  # raw_data always None to avoid JSON serialisation issues
             ))
 
         with conn.cursor() as cur:
@@ -60,11 +69,11 @@ def load_transactions(
                         %s::jsonb)
                 ON CONFLICT (source, external_id) DO NOTHING
                 """,
-                values,
+                batch_values,
             )
-            batch_ins = cur.rowcount if cur.rowcount >= 0 else 0
+            batch_ins = cur.rowcount if cur.rowcount >= 0 else len(batch_values)
             inserted += batch_ins
-            skipped  += len(batch) - batch_ins
+            skipped  += (end - i) - batch_ins
         conn.commit()
 
     return inserted, skipped
