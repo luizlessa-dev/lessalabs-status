@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
   const de       = searchParams.get("de");
   const ate      = searchParams.get("ate");
   const page     = Math.max(1, parseInt(searchParams.get("page") ?? "1"));
-  const per_page = Math.min(500, parseInt(searchParams.get("per_page") ?? "100"));
+  const per_page = Math.min(1000, parseInt(searchParams.get("per_page") ?? "100"));
   const offset   = (page - 1) * per_page;
 
   const supabase = createServerClient();

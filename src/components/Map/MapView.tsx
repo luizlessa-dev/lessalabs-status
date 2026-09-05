@@ -5,20 +5,25 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { CITIES, DEFAULT_CITY } from "@/data/cities";
 import type { TransactionFeature } from "@/lib/types";
+import type { Filters } from "@/components/FilterPanel";
 import TransactionPopup from "./TransactionPopup";
 
-type Props = { citySlug: string };
+type Props = { citySlug: string; filters?: Filters };
 
 const TILE_URL = "https://tiles.openfreemap.org/styles/liberty";
 
-export default function MapView({ citySlug }: Props) {
+export default function MapView({ citySlug, filters = {} }: Props) {
   const mapRef = useRef<maplibregl.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const popupRef = useRef<maplibregl.Popup | null>(null);
+  const mapReadyRef = useRef(false);
   const [selected, setSelected] = useState<TransactionFeature | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [count, setCount] = useState<number | null>(null);
 
   const city = CITIES[citySlug] ?? DEFAULT_CITY;
+  const { tipo, de, ate, bairro } = filters;
 
+  // Initialise map once
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
@@ -85,7 +90,8 @@ export default function MapView({ citySlug }: Props) {
         },
       });
 
-      loadTransactions(map, citySlug);
+      mapReadyRef.current = true;
+      fetchAndLoad(map, citySlug, filters, setLoading, setCount);
     });
 
     map.on("click", "unclustered-point", (e) => {
@@ -112,21 +118,46 @@ export default function MapView({ citySlug }: Props) {
     map.on("mouseleave", "clusters", () => { map.getCanvas().style.cursor = ""; });
 
     mapRef.current = map;
-    return () => { map.remove(); mapRef.current = null; };
+    return () => {
+      mapReadyRef.current = false;
+      map.remove();
+      mapRef.current = null;
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Reload on city or filter change (only after map is ready)
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !map.isStyleLoaded()) return;
+    if (!map || !mapReadyRef.current) return;
     map.easeTo({ center: city.center, zoom: city.zoom, duration: 800 });
-    loadTransactions(map, citySlug);
-  }, [citySlug, city.center, city.zoom]);
+    fetchAndLoad(map, citySlug, filters, setLoading, setCount);
+  }, [citySlug, city.center, city.zoom, tipo, de, ate, bairro]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleClose = useCallback(() => setSelected(null), []);
 
   return (
     <div className="relative w-full h-full">
       <div ref={containerRef} className="w-full h-full" />
+
+      {/* Loading overlay */}
+      {loading && (
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 pointer-events-none">
+          <div className="bg-white/90 dark:bg-gray-900/90 rounded-full px-4 py-1.5 text-xs text-gray-600 dark:text-gray-300 shadow-md flex items-center gap-2">
+            <span className="inline-block w-3 h-3 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
+            Carregando dados…
+          </div>
+        </div>
+      )}
+
+      {/* Record count badge */}
+      {!loading && count !== null && (
+        <div className="absolute top-3 left-3 pointer-events-none">
+          <div className="bg-white/90 dark:bg-gray-900/90 rounded-full px-3 py-1 text-xs text-gray-500 dark:text-gray-400 shadow">
+            {count.toLocaleString("pt-BR")} transações
+          </div>
+        </div>
+      )}
+
       {selected && (
         <TransactionPopup feature={selected} onClose={handleClose} />
       )}
@@ -134,11 +165,29 @@ export default function MapView({ citySlug }: Props) {
   );
 }
 
-async function loadTransactions(map: maplibregl.Map, citySlug: string) {
-  const params = new URLSearchParams({ cidade: citySlug, per_page: "500" });
-  const res = await fetch(`/api/v1/transactions?${params}`);
-  if (!res.ok) return;
-  const json = await res.json();
-  const source = map.getSource("transactions") as maplibregl.GeoJSONSource | undefined;
-  source?.setData({ type: "FeatureCollection", features: json.data });
+async function fetchAndLoad(
+  map: maplibregl.Map,
+  citySlug: string,
+  filters: Filters,
+  setLoading: (v: boolean) => void,
+  setCount: (n: number) => void,
+) {
+  setLoading(true);
+  try {
+    const params = new URLSearchParams({ cidade: citySlug, per_page: "1000" });
+    if (filters.tipo)   params.set("tipo", filters.tipo);
+    if (filters.de)     params.set("de", filters.de);
+    if (filters.ate)    params.set("ate", filters.ate);
+    if (filters.bairro) params.set("bairro", filters.bairro);
+
+    const res = await fetch(`/api/v1/transactions?${params}`);
+    if (!res.ok) return;
+    const json = await res.json();
+
+    const source = map.getSource("transactions") as maplibregl.GeoJSONSource | undefined;
+    source?.setData({ type: "FeatureCollection", features: json.data ?? [] });
+    setCount(json.total ?? json.data?.length ?? 0);
+  } finally {
+    setLoading(false);
+  }
 }
