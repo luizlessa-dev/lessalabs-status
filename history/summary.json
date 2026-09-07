@@ -10,11 +10,11 @@
     "uptimeWeek": "100.00%",
     "uptimeMonth": "100.00%",
     "uptimeYear": "100.00%",
-    "time": 121,
-    "timeDay": 111,
-    "timeWeek": 118,
-    "timeMonth": 117,
-    "timeYear": 121,
+    "time": 123,
+    "timeDay": 142,
+    "timeWeek": 156,
+    "timeMonth": 123,
+    "timeYear": 123,
     "dailyMinutesDown": {}
   },
   {
@@ -22,19 +22,20 @@
     "url": "https://thebrinsider.com",
     "icon": "https://icons.duckduckgo.com/ip3/thebrinsider.com.ico",
     "slug": "br-insider",
-    "status": "up",
-    "uptime": "99.88%",
-    "uptimeDay": "100.00%",
-    "uptimeWeek": "100.00%",
-    "uptimeMonth": "99.71%",
-    "uptimeYear": "99.88%",
-    "time": 731,
-    "timeDay": 930,
-    "timeWeek": 1086,
-    "timeMonth": 938,
-    "timeYear": 731,
+    "status": "down",
+    "uptime": "99.91%",
+    "uptimeDay": "99.96%",
+    "uptimeWeek": "99.99%",
+    "uptimeMonth": "100.00%",
+    "uptimeYear": "99.91%",
+    "time": 796,
+    "timeDay": 1026,
+    "timeWeek": 986,
+    "timeMonth": 1009,
+    "timeYear": 796,
     "dailyMinutesDown": {
-      "2026-08-03": 129
+      "2026-08-03": 129,
+      "2026-09-07": 1
     }
   },
   {
@@ -42,19 +43,20 @@
     "url": "https://judiciario.thebrinsider.com",
     "icon": "https://icons.duckduckgo.com/ip3/judiciario.thebrinsider.com.ico",
     "slug": "observatorio-judiciario",
-    "status": "up",
-    "uptime": "99.96%",
-    "uptimeDay": "96.89%",
-    "uptimeWeek": "99.56%",
+    "status": "down",
+    "uptime": "99.97%",
+    "uptimeDay": "99.97%",
+    "uptimeWeek": "100.00%",
     "uptimeMonth": "99.90%",
-    "uptimeYear": "99.96%",
-    "time": 150,
-    "timeDay": 141,
-    "timeWeek": 168,
-    "timeMonth": 171,
-    "timeYear": 150,
+    "uptimeYear": "99.97%",
+    "time": 158,
+    "timeDay": 204,
+    "timeWeek": 211,
+    "timeMonth": 176,
+    "timeYear": 158,
     "dailyMinutesDown": {
-      "2026-08-16": 45
+      "2026-08-16": 45,
+      "2026-09-07": 0
     }
   },
   {
@@ -62,17 +64,19 @@
     "url": "https://gastronomizae.com",
     "icon": "https://icons.duckduckgo.com/ip3/gastronomizae.com.ico",
     "slug": "gastronomizae",
-    "status": "up",
+    "status": "down",
     "uptime": "100.00%",
-    "uptimeDay": "100.00%",
+    "uptimeDay": "99.98%",
     "uptimeWeek": "100.00%",
     "uptimeMonth": "100.00%",
     "uptimeYear": "100.00%",
-    "time": 195,
-    "timeDay": 190,
-    "timeWeek": 198,
-    "timeMonth": 198,
-    "timeYear": 195,
-    "dailyMinutesDown": {}
+    "time": 199,
+    "timeDay": 154,
+    "timeWeek": 188,
+    "timeMonth": 204,
+    "timeYear": 199,
+    "dailyMinutesDown": {
+      "2026-09-07": 0
+    }
   }
 ]
