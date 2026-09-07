@@ -139,5 +139,5 @@ def download(year: int | None = None) -> pd.DataFrame:
 
     result = pd.concat(normalized, ignore_index=True)
     # external_id único por fonte: usa índice global
-    result["external_id"] = result.index.astype(str)
+    result = result.assign(external_id=result.index.astype(str))
     return result
