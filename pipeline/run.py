@@ -25,7 +25,7 @@ def run(city_slug: str, year: int) -> None:
         return
     print(f"[{city_slug}] {len(df):,} records fetched.")
 
-    conn = psycopg.connect(DATABASE_URL)
+    conn = psycopg.connect(DATABASE_URL, prepare_threshold=None)
 
     print(f"[{city_slug}] Geocoding {df['address'].nunique():,} unique addresses...")
     unique_addresses = df["address"].dropna().unique().tolist()
