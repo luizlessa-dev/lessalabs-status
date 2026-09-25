@@ -28,4 +28,9 @@ CITIES = {
         "db_id": 4,
         "downloader": "porto_alegre",
     },
+    "fortaleza": {
+        "name": "Fortaleza",
+        "db_id": 5,
+        "downloader": "fortaleza",
+    },
 }

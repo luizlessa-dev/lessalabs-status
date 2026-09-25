@@ -5,3 +5,4 @@ psycopg[binary]>=3.2
 python-dotenv==1.0.1
 tqdm==4.67.0
 geopy==2.4.1
+dadosimob>=0.1.0

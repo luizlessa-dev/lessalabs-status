@@ -27,11 +27,19 @@ def run(city_slug: str, year: int) -> None:
 
     conn = psycopg.connect(DATABASE_URL, prepare_threshold=None)
 
-    print(f"[{city_slug}] Geocoding {df['address'].nunique():,} unique addresses...")
-    unique_addresses = df["address"].dropna().unique().tolist()
-    coords = geocode_batch(unique_addresses, conn)
-    geocoded = sum(1 for v in coords.values() if v is not None)
-    print(f"[{city_slug}] Geocoded {geocoded}/{len(unique_addresses)} addresses.")
+    # Alguns downloaders (ex: Fortaleza) já fornecem lat/lng do dataset
+    if "lat" in df.columns and "lng" in df.columns:
+        coords: dict[str, tuple[float, float] | None] = {}
+        for addr, lng, lat in zip(df["address"].tolist(), df["lng"].tolist(), df["lat"].tolist()):
+            if addr and lng is not None and lat is not None:
+                coords[addr] = (float(lng), float(lat))
+        print(f"[{city_slug}] Coordenadas do dataset: {len(coords):,} diretas (sem geocoding Nominatim).")
+    else:
+        print(f"[{city_slug}] Geocoding {df['address'].nunique():,} unique addresses...")
+        unique_addresses = df["address"].dropna().unique().tolist()
+        coords = geocode_batch(unique_addresses, conn)
+        geocoded = sum(1 for v in coords.values() if v is not None)
+        print(f"[{city_slug}] Geocoded {geocoded}/{len(unique_addresses)} addresses.")
 
     ins, skip = load_transactions(df, cfg["db_id"], conn, coords)
     print(f"[{city_slug}] Inserted {ins:,} | Skipped {skip:,} (duplicates)")

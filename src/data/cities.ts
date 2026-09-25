@@ -29,6 +29,13 @@ export const CITIES: Record<string, City> = {
     center: [-51.2177, -30.0346],
     zoom: 12,
   },
+  "fortaleza": {
+    slug: "fortaleza",
+    name: "Fortaleza",
+    uf: "CE",
+    center: [-38.5434, -3.7172],
+    zoom: 12,
+  },
 };
 
-export const DEFAULT_CITY = CITIES["sao-paulo"];
+export const DEFAULT_CITY = CITIES["belo-horizonte"];
